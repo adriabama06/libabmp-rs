@@ -44,3 +44,13 @@ impl AbmpBitmap {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum Error {
+    DataIsSmallerThanHeader,
+    IsNotABmpFile,
+    BmpDataIsCorrupted,
+    CompressionIsNotSupported,
+    LowBitsPerPixelIsNotSupported,
+    DataIsSmallerThanImagesize
+}

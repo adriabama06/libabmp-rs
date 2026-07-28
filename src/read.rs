@@ -1,21 +1,21 @@
-use crate::abitmap::{ABMP_HEADER_SIZE, AbmpBitmap, AbmpBitmapHeader};
+use crate::abitmap::{self, ABMP_HEADER_SIZE, AbmpBitmap, AbmpBitmapHeader};
 
 use std::{fs::File, io::{self, Read, Seek, SeekFrom}};
 
 impl AbmpBitmapHeader {
-    pub fn file_read_header(&mut self, file: &mut File) -> io::Result<()> {
-        let mut buf = [0u8; ABMP_HEADER_SIZE as usize];
-
-        file.read_exact(&mut buf)?;
+    pub fn read_header(&mut self, data: &Vec<u8>) -> Result<(), abitmap::Error> {
+        if data.len() < ABMP_HEADER_SIZE as usize {
+            return Err(abitmap::Error::DataIsSmallerThanHeader);
+        }
 
         let u32_at = |offset: usize| -> u32 {
-            u32::from_le_bytes(buf[offset..offset + 4].try_into().unwrap())
+            u32::from_le_bytes(data[offset..offset + 4].try_into().unwrap())
         };
         let u16_at = |offset: usize| -> u16 {
-            u16::from_le_bytes(buf[offset..offset + 2].try_into().unwrap())
+            u16::from_le_bytes(data[offset..offset + 2].try_into().unwrap())
         };
 
-        self.signature = [buf[0], buf[1]];
+        self.signature = [data[0], data[1]];
         self.filesize = u32_at(2);
         self.reserved = u32_at(6);
         self.dataoffset = u32_at(10);
@@ -33,18 +33,12 @@ impl AbmpBitmapHeader {
         self.important_colors = u32_at(50);
 
         if &self.signature != b"BM" {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("Invaild file, found {} and expected 'BM'", std::str::from_utf8(&self.signature).unwrap()),
-            ));
+            return Err(abitmap::Error::IsNotABmpFile);
         }
 
         if self.width * self.height * 3 + (self.width % 4) * self.height != self.imagesize && self.imagesize != 0
         {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "A: This is not a BMP file, B: The file is wrong."
-            ));
+            return Err(abitmap::Error::BmpDataIsCorrupted);
         }
 
         Ok(())
@@ -52,31 +46,30 @@ impl AbmpBitmapHeader {
 }
 
 impl AbmpBitmap {
-    pub fn file_read_data(&mut self, file: &mut File) -> io::Result<()> {
+    pub fn read_data(&mut self, data: &Vec<u8>) -> Result<(), abitmap::Error> {
         if self.header.compression != 0 {
-            return Err(io::Error::new(
-                io::ErrorKind::Unsupported,
-                "Compression is not supported"
-            ));
+            return Err(abitmap::Error::CompressionIsNotSupported);
         }
 
         if self.header.bits_per_pixel <= 8 {
-            return Err(io::Error::new(
-                io::ErrorKind::Unsupported,
-                "Low bits per pixel is not supported"
-            ));
+            return Err(abitmap::Error::LowBitsPerPixelIsNotSupported);
         }
 
         self.pixel_data = vec![0; self.header.imagesize as usize];
 
-        file.seek_relative(self.header.dataoffset as i64)?;
+        let start: usize = self.header.dataoffset as usize;
+        let end: usize = start + self.header.imagesize as usize;
 
-        file.read_exact(&mut self.pixel_data)?;
+        if end > data.len() {
+            return Err(abitmap::Error::DataIsSmallerThanImagesize);
+        }
+
+        self.pixel_data.copy_from_slice(&data[start..end]);
 
         Ok(())
     }
 
-    pub fn file_read_file_p(&mut self, file: &mut File) -> io::Result<()> {
+    pub fn read_file_p(&mut self, file: &mut File) -> io::Result<()> {
         let file_start = file.stream_position()?;
 
         let file_size = file.seek(SeekFrom::End(0))? - file_start;
@@ -89,19 +82,23 @@ impl AbmpBitmap {
         }
 
         file.seek(SeekFrom::Start(file_start))?;
-        self.header.file_read_header(file)?;
 
-        file.seek(SeekFrom::Start(file_start))?;
-        self.file_read_data(file)?;
+        let mut data: Vec<u8> = Vec::new();
+        
+        file.read_to_end(&mut data)?;
+
+        self.header.read_header(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
+
+        self.read_data(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
 
         Ok(())
     }
 
-    pub fn file_read_file(&mut self, path: String) -> io::Result<()>
+    pub fn read_file(&mut self, path: String) -> io::Result<()>
     {
         let mut file = File::open(path)?;
 
-        self.file_read_file_p(&mut file)?;
+        self.read_file_p(&mut file)?;
 
         Ok(())
     }

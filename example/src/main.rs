@@ -39,4 +39,16 @@ fn main() {
     println!("{:?}", sample_2);
 
     sample_2.file_write_file("copy_twoofpadding.bmp".to_string()).unwrap();
+
+
+
+
+
+    let mut sample_3 = AbmpBitmap::default();
+
+    sample_3.read_file("../samples/generated.bmp".to_string()).unwrap();
+
+    println!("{:?}", sample_3);
+
+    sample_3.file_write_file("copy_generated.bmp".to_string()).unwrap();
 }
