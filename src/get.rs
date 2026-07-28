@@ -99,4 +99,3 @@ pub fn abmp_get_pixel_position_from_top_left(header: &AbmpBitmapHeader, x: u32, 
     // + x in the current line
     return header.width * (header.height - y - 1) * 3 + (header.width % 4) * (header.height - y - 1) + 3 * x;
 }
-

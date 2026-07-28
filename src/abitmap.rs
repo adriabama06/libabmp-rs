@@ -1,4 +1,6 @@
-#[derive(Debug, Default)]
+pub const ABMP_HEADER_SIZE: u32 = 54;
+
+#[derive(Debug, Default, Clone, Copy)]
 pub struct AbmpBitmapHeader {
     pub signature: [u8; 2],
     pub filesize: u32,
@@ -26,18 +28,19 @@ impl AbmpBitmapHeader {
 
 #[derive(Debug, Default)]
 pub struct AbmpBitmap {
-    header: AbmpBitmapHeader,
-    color_table: Vec<u8>,
-    pixel_data: Vec<u8>
+    pub header: AbmpBitmapHeader,
+    pub color_table: Vec<u8>,
+    pub pixel_data: Vec<u8>
 }
 
 impl AbmpBitmap {
     pub fn new(header: AbmpBitmapHeader) -> Self {
         let filesize: usize = header.filesize as usize;
+        let dataoffset: usize = header.dataoffset as usize;
         AbmpBitmap {
             header,
             color_table: vec![],
-            pixel_data: vec![0; filesize],
+            pixel_data: vec![0; filesize.saturating_sub(dataoffset)],
         }
     }
 }
