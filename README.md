@@ -2,7 +2,7 @@
 
 A lightweight Rust library for reading and writing BMP files, implemented from scratch without external dependencies.
 
-> **Note:** This is a hand-written Rust rewrite of [libabmp](../libabmp), a pure C library. The original C implementation was reimplemented in Rust from scratch — no automatic conversion tools were used.
+> **Note:** This is a hand-written Rust rewrite of [libabmp](https://github.com/adriabama06/libabmp), a pure C library. The original C implementation was reimplemented in Rust from scratch — no automatic conversion tools were used.
 
 ## Features
 
