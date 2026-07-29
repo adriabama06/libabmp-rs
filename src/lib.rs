@@ -32,7 +32,7 @@ mod tests {
     /// Reads an AbmpBitmap from a file path.
     fn read_bmp(path: &str) -> AbmpBitmap {
         let mut bitmap = AbmpBitmap::default();
-        bitmap.file_read_file(path.to_string()).unwrap();
+        bitmap.read_bmp_from_filepath_using_directread(path.to_string()).unwrap();
         bitmap
     }
 
@@ -87,7 +87,7 @@ mod tests {
     fn test_read_square_bmp_and_modify_pixel() {
         let path = samples_path("square.bmp");
         let mut bitmap = AbmpBitmap::default();
-        bitmap.file_read_file(path).unwrap();
+        bitmap.read_bmp_from_filepath_using_directread(path).unwrap();
 
         // Verify the square.bmp has the expected dimensions (4x4).
         assert_eq!(bitmap.header.width, 4, "square.bmp should be 4 pixels wide");
@@ -102,7 +102,7 @@ mod tests {
 
         // Write the modified bitmap to a temp file.
         let out_path = temp_path("read_square_modify");
-        bitmap.file_write_file(out_path.clone()).unwrap();
+        bitmap.write_bmp_to_filepath_using_directwrite(out_path.clone()).unwrap();
 
         // Read back and verify pixel (2,2) is pure red.
         let result = read_bmp(&out_path);
@@ -167,7 +167,7 @@ mod tests {
 
         // Write the gradient bitmap to a temp file.
         let out_path = temp_path("create_gradient");
-        bitmap.file_write_file(out_path.clone()).unwrap();
+        bitmap.write_bmp_to_filepath_using_directwrite(out_path.clone()).unwrap();
 
         // Read back and verify header dimensions.
         let result = read_bmp(&out_path);
@@ -212,7 +212,7 @@ mod tests {
     fn test_read_twoofpadding_bmp_and_print_pixel() {
         let path = samples_path("twoofpadding.bmp");
         let mut bitmap = AbmpBitmap::default();
-        bitmap.file_read_file(path).unwrap();
+        bitmap.read_bmp_from_filepath_using_directread(path).unwrap();
 
         // Verify twoofpadding.bmp has the expected dimensions (6x4).
         assert_eq!(bitmap.header.width, 6, "twoofpadding.bmp should be 6 pixels wide");
@@ -220,11 +220,11 @@ mod tests {
 
         // Draw a red pixel at position (0, 3) using the print method.
         // print(x, y, R, G, B) sets pixel at (x,y) to the given BGR color.
-        bitmap.print(0, 3, 255, 0, 0);
+        bitmap.draw(0, 3, 255, 0, 0);
 
         // Write the modified bitmap to a temp file.
         let out_path = temp_path("twoofpadding_print");
-        bitmap.file_write_file(out_path.clone()).unwrap();
+        bitmap.write_bmp_to_filepath_using_directwrite(out_path.clone()).unwrap();
 
         // Read back and verify pixel (0,3) is red (B=0, G=0, R=255).
         let result = read_bmp(&out_path);
@@ -257,7 +257,7 @@ mod tests {
     fn test_read_generated_bmp_and_print_diagonal_patterns() {
         let path = samples_path("generated.bmp");
         let mut bitmap = AbmpBitmap::default();
-        bitmap.read_file(path).unwrap();
+        bitmap.read_bmp_from_filepath_using_memory(path).unwrap();
 
         // Verify generated.bmp has the expected dimensions (5x5).
         assert_eq!(bitmap.header.width, 5, "generated.bmp should be 5 pixels wide");
@@ -267,19 +267,19 @@ mod tests {
         // print(x, y, R, G, B) — here R=0, G=255, B=0 means pure green.
         for i in 0..=4 {
             if i == 2 { continue; }
-            bitmap.print(i, i, 0, 255, 0);
+            bitmap.draw(i, i, 0, 255, 0);
         }
 
         // Print blue pixels along the anti-diagonal (x, 4-x), skipping i=2.
         // print(x, y, R, G, B) — here R=0, G=0, B=255 means pure blue.
         for i in 0..=4 {
             if i == 2 { continue; }
-            bitmap.print(i, 4 - i, 0, 0, 255);
+            bitmap.draw(i, 4 - i, 0, 0, 255);
         }
 
         // Write the patterned bitmap to a temp file.
         let out_path = temp_path("generated_pattern");
-        bitmap.write_file(out_path.clone()).unwrap();
+        bitmap.write_bmp_to_filepath_using_memory(out_path.clone()).unwrap();
 
         // Read back and verify the diagonal and anti-diagonal pixels.
         let result = read_bmp(&out_path);

@@ -3,7 +3,7 @@ use crate::abitmap::{self, ABMP_HEADER_SIZE, AbmpBitmap, AbmpBitmapHeader};
 use std::{fs::File, io::{self, Read, Seek, SeekFrom}};
 
 impl AbmpBitmapHeader {
-    pub fn read_header(&mut self, data: &Vec<u8>) -> Result<(), abitmap::Error> {
+    pub fn read_header_from_memory(&mut self, data: &Vec<u8>) -> Result<(), abitmap::Error> {
         if data.len() < ABMP_HEADER_SIZE as usize {
             return Err(abitmap::Error::DataIsSmallerThanHeader);
         }
@@ -46,7 +46,7 @@ impl AbmpBitmapHeader {
 }
 
 impl AbmpBitmap {
-    pub fn read_data(&mut self, data: &Vec<u8>) -> Result<(), abitmap::Error> {
+    pub fn read_pixeldata_from_memory(&mut self, data: &Vec<u8>) -> Result<(), abitmap::Error> {
         if self.header.compression != 0 {
             return Err(abitmap::Error::CompressionIsNotSupported);
         }
@@ -69,7 +69,7 @@ impl AbmpBitmap {
         Ok(())
     }
 
-    pub fn read_file_p(&mut self, file: &mut File) -> io::Result<()> {
+    pub fn read_bmp_from_file_memory(&mut self, file: &mut File) -> io::Result<()> {
         let file_start = file.stream_position()?;
 
         let file_size = file.seek(SeekFrom::End(0))? - file_start;
@@ -87,18 +87,18 @@ impl AbmpBitmap {
         
         file.read_to_end(&mut data)?;
 
-        self.header.read_header(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
+        self.header.read_header_from_memory(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
 
-        self.read_data(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
+        self.read_pixeldata_from_memory(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
 
         Ok(())
     }
 
-    pub fn read_file(&mut self, path: String) -> io::Result<()>
+    pub fn read_bmp_from_filepath_using_memory(&mut self, path: String) -> io::Result<()>
     {
         let mut file = File::open(path)?;
 
-        self.read_file_p(&mut file)?;
+        self.read_bmp_from_file_memory(&mut file)?;
 
         Ok(())
     }

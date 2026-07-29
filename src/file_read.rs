@@ -3,7 +3,7 @@ use crate::abitmap::{ABMP_HEADER_SIZE, AbmpBitmap, AbmpBitmapHeader};
 use std::{fs::File, io::{self, Read, Seek, SeekFrom}};
 
 impl AbmpBitmapHeader {
-    pub fn file_read_header(&mut self, file: &mut File) -> io::Result<()> {
+    pub fn read_header_from_file(&mut self, file: &mut File) -> io::Result<()> {
         let mut buf = [0u8; ABMP_HEADER_SIZE as usize];
 
         file.read_exact(&mut buf)?;
@@ -52,7 +52,7 @@ impl AbmpBitmapHeader {
 }
 
 impl AbmpBitmap {
-    pub fn file_read_data(&mut self, file: &mut File) -> io::Result<()> {
+    pub fn read_pixeldata_from_file(&mut self, file: &mut File) -> io::Result<()> {
         if self.header.compression != 0 {
             return Err(io::Error::new(
                 io::ErrorKind::Unsupported,
@@ -76,7 +76,7 @@ impl AbmpBitmap {
         Ok(())
     }
 
-    pub fn file_read_file_p(&mut self, file: &mut File) -> io::Result<()> {
+    pub fn read_bmp_from_file_direct(&mut self, file: &mut File) -> io::Result<()> {
         let file_start = file.stream_position()?;
 
         let file_size = file.seek(SeekFrom::End(0))? - file_start;
@@ -89,19 +89,19 @@ impl AbmpBitmap {
         }
 
         file.seek(SeekFrom::Start(file_start))?;
-        self.header.file_read_header(file)?;
+        self.header.read_header_from_file(file)?;
 
         file.seek(SeekFrom::Start(file_start))?;
-        self.file_read_data(file)?;
+        self.read_pixeldata_from_file(file)?;
 
         Ok(())
     }
 
-    pub fn file_read_file(&mut self, path: String) -> io::Result<()>
+    pub fn read_bmp_from_filepath_using_directread(&mut self, path: String) -> io::Result<()>
     {
         let mut file = File::open(path)?;
 
-        self.file_read_file_p(&mut file)?;
+        self.read_bmp_from_file_direct(&mut file)?;
 
         Ok(())
     }

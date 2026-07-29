@@ -3,7 +3,7 @@ use crate::abitmap::{ABMP_HEADER_SIZE, AbmpBitmap, AbmpBitmapHeader};
 use std::{fs::File, io::{self, Seek, SeekFrom, Write}};
 
 impl AbmpBitmapHeader {
-    pub fn file_write_header(&self, file: &mut File) -> io::Result<()> {
+    pub fn write_header_to_file(&self, file: &mut File) -> io::Result<()> {
         // Validación básica: firma "BM"
         if &self.signature != b"BM" {
             return Err(io::Error::new(
@@ -47,31 +47,31 @@ impl AbmpBitmapHeader {
 }
 
 impl AbmpBitmap {
-    pub fn file_write_data(&self, file: &mut File) -> io::Result<()> {
+    pub fn write_pixeldata_to_file(&self, file: &mut File) -> io::Result<()> {
         file.write_all(&self.pixel_data)?;
 
         Ok(())
     }
 
-    pub fn file_write_file_p(&self, file: &mut File) -> io::Result<()> {
+    pub fn write_bmp_to_file_direct(&self, file: &mut File) -> io::Result<()> {
         let file_start = file.stream_position()?;
 
 
-        self.header.file_write_header(file)?;
+        self.header.write_header_to_file(file)?;
 
         file.seek(SeekFrom::Start(file_start + self.header.dataoffset as u64))?;
 
-        self.file_write_data(file)?;
+        self.write_pixeldata_to_file(file)?;
 
         Ok(())
     }
 
-    pub fn file_write_file(&self, path: String) -> io::Result<()>
+    pub fn write_bmp_to_filepath_using_directwrite(&self, path: String) -> io::Result<()>
     {
         // Open file
         let mut file = File::create(path)?;
 
-        self.file_write_file_p(&mut file)?;
+        self.write_bmp_to_file_direct(&mut file)?;
 
         Ok(())
     }

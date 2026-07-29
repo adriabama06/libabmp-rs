@@ -3,7 +3,7 @@ use crate::abitmap::{self, AbmpBitmap, AbmpBitmapHeader};
 use std::{fs::File, io::{self, Write}};
 
 impl AbmpBitmapHeader {
-    pub fn write_header(&mut self, data: &mut Vec<u8>) -> Result<(), abitmap::Error> {
+    pub fn write_header_to_memory(&mut self, data: &mut Vec<u8>) -> Result<(), abitmap::Error> {
         if &self.signature != b"BM" {
             return Err(abitmap::Error::IsNotABmpFile);
         }
@@ -35,7 +35,7 @@ impl AbmpBitmapHeader {
 }
 
 impl AbmpBitmap {
-    pub fn write_data(&mut self, data: &mut Vec<u8>) -> Result<(), abitmap::Error> {
+    pub fn write_pixeldata_to_memory(&mut self, data: &mut Vec<u8>) -> Result<(), abitmap::Error> {
         let start: usize = self.header.dataoffset as usize;
         let end: usize = start + self.header.imagesize as usize;
 
@@ -51,23 +51,23 @@ impl AbmpBitmap {
         Ok(())
     }
 
-    pub fn write_file_p(&mut self, file: &mut File) -> io::Result<()> {
+    pub fn write_bmp_to_file_memory(&mut self, file: &mut File) -> io::Result<()> {
         let mut file_data: Vec<u8> = vec![0; (self.header.dataoffset + self.header.imagesize) as usize];
 
-        self.header.write_header(&mut file_data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
+        self.header.write_header_to_memory(&mut file_data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
 
-        self.write_data(&mut file_data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
+        self.write_pixeldata_to_memory(&mut file_data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, format!("{:?}", e)))?;
 
         file.write_all(&file_data)?;
 
         Ok(())
     }
 
-    pub fn write_file(&mut self, path: String) -> io::Result<()>
+    pub fn write_bmp_to_filepath_using_memory(&mut self, path: String) -> io::Result<()>
     {
         let mut file = File::create(path)?;
 
-        self.write_file_p(&mut file)?;
+        self.write_bmp_to_file_memory(&mut file)?;
 
         Ok(())
     }
