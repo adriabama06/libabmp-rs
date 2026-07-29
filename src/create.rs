@@ -1,31 +1,29 @@
-use crate::abitmap::{ABMP_HEADER_SIZE, AbmpBitmap};
+use crate::abitmap::{ABMP_HEADER_SIZE, AbmpBitmap, AbmpBitmapHeader};
 
 impl AbmpBitmap {
     pub fn create(width: u32, height: u32) -> Self {
-        let mut bitmap: AbmpBitmap = AbmpBitmap::default();
+        let mut header: AbmpBitmapHeader = AbmpBitmapHeader::new();
 
-        bitmap.header.signature[0] = 'B' as u8;
-        bitmap.header.signature[1] = 'M' as u8;
+        header.signature[0] = 'B' as u8;
+        header.signature[1] = 'M' as u8;
 
-        bitmap.header.dataoffset = ABMP_HEADER_SIZE;
+        header.dataoffset = ABMP_HEADER_SIZE;
 
-        bitmap.header.width = width;
-        bitmap.header.height = height;
+        header.width = width;
+        header.height = height;
 
 
-        bitmap.header.bits_per_pixel = 24;
-        bitmap.header.planes = 1;
-        bitmap.header.size = 40;
+        header.bits_per_pixel = 24;
+        header.planes = 1;
+        header.size = 40;
 
         let padding: u32 = width % 4;
 
         /*   imagesize = width*height*3(colors BGR) + padding * height   */
-        bitmap.header.imagesize = width * height * 3 + padding * height;
+        header.imagesize = width * height * 3 + padding * height;
 
-        bitmap.header.filesize = ABMP_HEADER_SIZE + bitmap.header.imagesize;
+        header.filesize = ABMP_HEADER_SIZE + header.imagesize;
 
-        bitmap.pixel_data = vec![255u8; bitmap.header.imagesize as usize];
-
-        return bitmap;
+        AbmpBitmap::new(header)
     }
 }

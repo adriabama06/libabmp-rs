@@ -35,12 +35,10 @@ pub struct AbmpBitmap {
 
 impl AbmpBitmap {
     pub fn new(header: AbmpBitmapHeader) -> Self {
-        let filesize: usize = header.filesize as usize;
-        let dataoffset: usize = header.dataoffset as usize;
         AbmpBitmap {
             header,
             color_table: vec![],
-            pixel_data: vec![0; filesize.saturating_sub(dataoffset)],
+            pixel_data: vec![255u8; header.imagesize as usize],
         }
     }
 }
