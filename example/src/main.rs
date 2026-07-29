@@ -56,6 +56,8 @@ fn main() {
 
     println!("{:?}", sample_2);
 
+    sample_2.print(0, 3, 255, 0, 0);
+
     sample_2.file_write_file("copy_twoofpadding.bmp".to_string()).unwrap();
 
 
@@ -67,6 +69,16 @@ fn main() {
     sample_3.read_file("../samples/generated.bmp".to_string()).unwrap();
 
     println!("{:?}", sample_3);
+
+    for i in 0..=4 {
+        if i == 2 { continue; }
+        sample_3.print(i, i, 0, 255, 0);
+    }
+
+    for i in 0..=4 {
+        if i == 2 { continue; }
+        sample_3.print(i, 4-i, 0, 0, 255);
+    }
 
     sample_3.write_file("copy_generated.bmp".to_string()).unwrap();
 }

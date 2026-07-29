@@ -5,6 +5,7 @@ pub mod file_read;
 pub mod file_write;
 pub mod read;
 pub mod write;
+pub mod print;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
