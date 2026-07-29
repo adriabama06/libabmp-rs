@@ -11,7 +11,7 @@ fn main() {
     
     let mut sample_1 = AbmpBitmap::default();
 
-    sample_1.file_read_file("../samples/square.bmp".to_string()).unwrap();
+    sample_1.read_bmp_from_filepath_using_directread("../samples/square.bmp".to_string()).unwrap();
 
     println!("{:?}", sample_1);
 
@@ -20,7 +20,7 @@ fn main() {
     sample_1.pixel_data[(abmp_get_pixel_position_from_top_left(&sample_1.header, 2, 2) + 1) as usize] = 0;
     sample_1.pixel_data[(abmp_get_pixel_position_from_top_left(&sample_1.header, 2, 2) + 2) as usize] = 255;
 
-    sample_1.file_write_file("square_edit.bmp".to_string()).unwrap();
+    sample_1.write_bmp_to_filepath_using_directwrite("square_edit.bmp".to_string()).unwrap();
 
     
     
@@ -44,7 +44,7 @@ fn main() {
         example_bitmap.pixel_data[(abmp_get_pixel_position_from_top_left(&example_bitmap.header, i, 2) + 2) as usize] = 0;
     }
 
-    example_bitmap.file_write_file("test.bmp".to_string()).unwrap();
+    example_bitmap.write_bmp_to_filepath_using_directwrite("test.bmp".to_string()).unwrap();
 
 
 
@@ -52,13 +52,13 @@ fn main() {
 
     let mut sample_2 = AbmpBitmap::default();
 
-    sample_2.file_read_file("../samples/twoofpadding.bmp".to_string()).unwrap();
+    sample_2.read_bmp_from_filepath_using_directread("../samples/twoofpadding.bmp".to_string()).unwrap();
 
     println!("{:?}", sample_2);
 
-    sample_2.print(0, 3, 255, 0, 0);
+    sample_2.draw(0, 3, 255, 0, 0);
 
-    sample_2.file_write_file("copy_twoofpadding.bmp".to_string()).unwrap();
+    sample_2.write_bmp_to_filepath_using_directwrite("copy_twoofpadding.bmp".to_string()).unwrap();
 
 
 
@@ -66,19 +66,19 @@ fn main() {
 
     let mut sample_3 = AbmpBitmap::default();
 
-    sample_3.read_file("../samples/generated.bmp".to_string()).unwrap();
+    sample_3.read_bmp_from_filepath_using_memory("../samples/generated.bmp".to_string()).unwrap();
 
     println!("{:?}", sample_3);
 
     for i in 0..=4 {
         if i == 2 { continue; }
-        sample_3.print(i, i, 0, 255, 0);
+        sample_3.draw(i, i, 0, 255, 0);
     }
 
     for i in 0..=4 {
         if i == 2 { continue; }
-        sample_3.print(i, 4-i, 0, 0, 255);
+        sample_3.draw(i, 4-i, 0, 0, 255);
     }
 
-    sample_3.write_file("copy_generated.bmp".to_string()).unwrap();
+    sample_3.write_bmp_to_filepath_using_memory("copy_generated.bmp".to_string()).unwrap();
 }
