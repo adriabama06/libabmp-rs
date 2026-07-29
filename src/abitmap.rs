@@ -52,5 +52,7 @@ pub enum Error {
     BmpDataIsCorrupted,
     CompressionIsNotSupported,
     LowBitsPerPixelIsNotSupported,
-    DataIsSmallerThanImagesize
+    DataIsSmallerThanImagesize,
+    SizeMismatch,
+    OutOfBounds
 }
